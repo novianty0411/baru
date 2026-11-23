@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roda Kepedulian – Permainan BK</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Roboto,sans-serif;user-select:none}
+  body{background:linear-gradient(145deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem;color:#fff}
+  .app{max-width:1400px;width:100%;background:rgba(255,255,255,.06);backdrop-filter:blur(18px);border-radius:40px;padding:1.8rem 2.2rem 2.5rem;box-shadow:0 30px 60px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.08)}
+  h1{font-size:2.2rem;font-weight:800;text-align:center;background:linear-gradient(135deg,#f9d423,#ff4e50,#f9d423);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.2rem}
+  .subtitle{text-align:center;font-size:1rem;color:#b8b0e0;margin-bottom:1.2rem}
+  .tab-nav{display:flex;gap:.5rem;margin-bottom:1.5rem;background:rgba(255,255,255,.04);border-radius:60px;padding:.35rem;border:1px solid rgba(255,255,255,.06)}
+  .tab-btn{flex:1;padding:.7rem 1rem;border:none;background:transparent;color:#b8b0e0;font-size:.95rem;font-weight:700;border-radius:60px;cursor:pointer;transition:.25s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .tab-btn:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .tab-btn.active{background:linear-gradient(135deg,#f9d423,#ffa500);color:#1a1a2e;box-shadow:0 4px 16px rgba(249,212,35,.35)}
+  .tab-btn .num{background:rgba(0,0,0,.2);width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem}
+  .tab-btn.active .num{background:rgba(0,0,0,.15)}
+  .panel{display:none;animation:fadeIn .35s ease}
+  .panel.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .setup-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:1.8rem}
+  .card-box{background:rgba(255,255,255,.04);border-radius:24px;padding:1.5rem 1.6rem;border:1px solid rgba(255,255,255,.07)}
+  .card-box h3{font-size:1.15rem;margin-bottom:1rem;color:#f9d423;font-weight:700;display:flex;align-items:center;gap:8px}
+  textarea.names-input{width:100%;min-height:220px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:16px;padding:.9rem 1rem;color:#fff;font-size:.95rem;line-height:1.6;outline:none;resize:vertical;font-family:inherit}
+  textarea.names-input:focus{border-color:#f9d423}
+  textarea.names-input::placeholder{color:rgba(255,255,255,.3)}
+  .name-count{font-size:.8rem;color:#b8b0e0;margin-top:.4rem;text-align:right}
+  .btn{border:none;border-radius:60px;padding:.85rem 2.2rem;font-size:1.05rem;font-weight:700;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .btn-primary{background:linear-gradient(135deg,#f9d423,#ffa500);color:#1e1e2f;box-shadow:0 8px 24px rgba(249,212,35,.3)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(249,212,35,.45)}
+  .btn-primary:disabled{opacity:.35;transform:none;box-shadow:none;cursor:not-allowed}
+  .btn-secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
+  .btn-secondary:hover{background:rgba(255,255,255,.15)}
+  .group-result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-top:.5rem}
+  .group-result{background:rgba(255,255,255,.05);border-radius:16px;padding:.8rem 1rem;border-left:4px solid #f9d423}
+  .group-result .gname{font-size:.85rem;font-weight:700;color:#f9d423;margin-bottom:.4rem;display:flex;align-items:center;gap:6px}
+  .group-result .gname .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .group-result .members{font-size:.8rem;color:#d8d2f0;line-height:1.5}
+  .info-box{background:rgba(249,212,35,.07);border-radius:16px;padding:.9rem 1.1rem;border-left:3px solid #f9d423;font-size:.88rem;line-height:1.6;color:#d8d2f0;margin-top:.8rem}
+  .info-box strong{color:#f9d423}
+  .game-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem;margin-bottom:1rem}
+  .round-badge{background:linear-gradient(135deg,#ff4e50,#f9d423);padding:.45rem 1.5rem;border-radius:60px;font-weight:800;font-size:1rem;color:#1a1a2e;box-shadow:0 4px 16px rgba(255,78,80,.35)}
+  .timer-big{font-size:1.8rem;font-weight:800;color:#f9d423;font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(249,212,35,.4);letter-spacing:2px}
+  .wheel-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.2rem}
+  .wheel-panel{background:rgba(255,255,255,.04);border-radius:24px;padding:1.5rem;border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px}
+  .wheel-canvas-wrap{position:relative;width:280px;height:280px;margin-bottom:1rem}
+  canvas#wheelCanvas{width:100%;height:100%;border-radius:50%;box-shadow:0 0 40px rgba(249,212,35,.15),0 0 0 6px rgba(255,255,255,.06)}
+  .wheel-pointer{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:28px solid #f9d423;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4));z-index:5}
+  .spin-btn{background:linear-gradient(135deg,#f9d423,#ffa500);color:#1a1a2e;border:none;border-radius:60px;padding:.9rem 2.5rem;font-size:1.1rem;font-weight:800;cursor:pointer;transition:.2s;box-shadow:0 8px 24px rgba(249,212,35,.35);display:inline-flex;align-items:center;gap:10px}
+  .spin-btn:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 14px 32px rgba(249,212,35,.5)}
+  .spin-btn:disabled{opacity:.35;transform:none;box-shadow:none;cursor:not-allowed}
+  .challenge-panel{background:rgba(255,255,255,.04);border-radius:24px;padding:1.5rem 1.6rem;border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;justify-content:center;min-height:380px}
+  .challenge-panel .empty-state{text-align:center;color:#b8b0e0;font-size:.95rem;line-height:1.8;padding:2rem 1rem}
+  .challenge-panel .empty-state .big-icon{font-size:3.5rem;margin-bottom:.8rem;opacity:.5}
+  .challenge-card{display:none}
+  .challenge-card.show{display:block;animation:fadeIn .4s ease}
+  .challenge-card .cat-badge{display:inline-block;background:rgba(249,212,35,.15);color:#f9d423;font-size:.75rem;font-weight:700;padding:.25rem .9rem;border-radius:30px;letter-spacing:1px;text-transform:uppercase;margin-bottom:.8rem}
+  .challenge-card h3{font-size:1.4rem;font-weight:800;color:#fff;line-height:1.4;margin-bottom:.8rem}
+  .challenge-card .challenge-desc{font-size:.95rem;color:#d8d2f0;line-height:1.6;margin-bottom:1.2rem}
+  .challenge-card .challenge-meta{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.2rem}
+  .challenge-card .meta-item{background:rgba(255,255,255,.06);border-radius:10px;padding:.4rem .9rem;font-size:.82rem;color:#b8b0e0;display:flex;align-items:center;gap:6px}
+  .challenge-card .meta-item strong{color:#f9d423}
+  .challenge-actions{display:flex;gap:.6rem;flex-wrap:wrap}
+  .btn-done{background:linear-gradient(135deg,#66bb6a,#43a047);color:#fff;padding:.75rem 1.8rem;font-size:.95rem;border:none;border-radius:60px;font-weight:700;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(102,187,106,.3)}
+  .btn-done:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(102,187,106,.45)}
+  .btn-done:disabled{opacity:.35;transform:none;box-shadow:none;cursor:not-allowed}
+  .btn-skip{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12);padding:.75rem 1.4rem;font-size:.85rem;border-radius:60px;font-weight:600;cursor:pointer;transition:.2s}
+  .btn-skip:hover:not(:disabled){background:rgba(255,255,255,.15)}
+  .btn-skip:disabled{opacity:.35;cursor:not-allowed}
+  .scoreboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem;margin-top:1rem}
+  .score-card{background:rgba(255,255,255,.04);border-radius:16px;padding:.7rem 1rem;border:2px solid rgba(255,255,255,.07);transition:.25s}
+  .score-card.active-turn{border-color:#f9d423;box-shadow:0 0 24px rgba(249,212,35,.2);background:rgba(249,212,35,.06)}
+  .score-card .team-name{font-size:.85rem;font-weight:700;margin-bottom:.2rem;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .score-card .team-name .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+  .score-card .team-score{font-size:1.6rem;font-weight:800;color:#f9d423;line-height:1}
+  .score-card .team-score small{font-size:.7rem;font-weight:400;color:#b8b0e0}
+  .turn-indicator{text-align:center;margin:.3rem 0 .8rem;font-size:1.1rem;font-weight:700;color:#f9d423;min-height:1.8rem}
+  .turn-indicator .highlight-team{background:rgba(249,212,35,.15);padding:.15rem 1rem;border-radius:60px;display:inline-block}
+  .reflection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.2rem}
+  .reflection-card{background:rgba(255,255,255,.04);border-radius:24px;padding:1.5rem 1.6rem;border:1px solid rgba(255,255,255,.07)}
+  .reflection-card h3{color:#f9d423;font-size:1.1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:8px}
+  .reflection-card .q-list{list-style:none;display:flex;flex-direction:column;gap:.7rem}
+  .reflection-card .q-list li{padding:.6rem .9rem;background:rgba(255,255,255,.03);border-radius:12px;border-left:3px solid #ff4e50;font-size:.9rem;line-height:1.5;color:#d8d2f0}
+  .reflection-card .q-list li strong{color:#f9d423}
+  .winner-banner{background:linear-gradient(135deg,rgba(249,212,35,.15),rgba(255,78,80,.15));border-radius:24px;padding:1.5rem 2rem;text-align:center;border:1px solid rgba(249,212,35,.3);margin-bottom:1.2rem}
+  .winner-banner .trophy{font-size:2.8rem;margin-bottom:.3rem}
+  .winner-banner h2{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#f9d423,#ff4e50);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .winner-banner .wname{font-size:1.4rem;font-weight:700;color:#fff;margin:.3rem 0}
+  .final-scores{display:flex;flex-wrap:wrap;gap:.8rem;justify-content:center;margin-top:.8rem}
+  .final-score-item{background:rgba(255,255,255,.06);border-radius:14px;padding:.6rem 1.2rem;min-width:120px;border:1px solid rgba(255,255,255,.08)}
+  .final-score-item .fs-name{font-size:.8rem;color:#b8b0e0}
+  .final-score-item .fs-val{font-size:1.5rem;font-weight:800;color:#fff}
+  .final-score-item.winner{border-color:#f9d423}
+  .final-score-item.winner .fs-val{color:#f9d423}
+  .center{text-align:center}
+  .mt-1{margin-top:.8rem}
+  .mt-2{margin-top:1.5rem}
+  .toast{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:#2e7d32;color:#fff;padding:.8rem 2rem;border-radius:60px;font-weight:700;font-size:1rem;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;animation:slideDown .3s ease;pointer-events:none}
+  @keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  @media(max-width:900px){.setup-grid{grid-template-columns:1fr}.wheel-layout{grid-template-columns:1fr}.app{padding:1.2rem;border-radius:28px}h1{font-size:1.6rem}.tab-btn{font-size:.8rem;padding:.5rem .6rem}.wheel-canvas-wrap{width:220px;height:220px}}
+  @media(max-width:550px){.scoreboard{grid-template-columns:repeat(2,1fr)}.wheel-canvas-wrap{width:180px;height:180px}.challenge-card h3{font-size:1.1rem}}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🎡 RODA KEPEDULIAN</h1>
+  <p class="subtitle">Permainan BK Interaktif • Tantangan • Kepedulian • Kerja Sama</p>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="tab1"><span class="num">1</span> Kelompok</button>
+    <button class="tab-btn" data-tab="tab2"><span class="num">2</span> Permainan</button>
+    <button class="tab-btn" data-tab="tab3"><span class="num">3</span> Refleksi</button>
+  </div>
+
+  <!-- TAB 1 -->
+  <div class="panel active" id="tab1">
+    <div class="setup-grid">
+      <div class="card-box">
+        <h3>📋 Paste Daftar Nama Siswa</h3>
+        <textarea class="names-input" id="namesInput" placeholder="Paste semua nama di sini...&#10;&#10;Contoh:&#10;Andi&#10;Budi&#10;Citra&#10;Dewi&#10;Eko&#10;...&#10;&#10;Bisa juga dipisah koma: Andi, Budi, Citra, Dewi"></textarea>
+        <div class="name-count" id="nameCount">0 nama terdeteksi</div>
+        <div class="info-box"><strong>📌 Petunjuk:</strong> Paste semua nama siswa (satu per baris atau dipisah koma). Minimal <strong>6 nama</strong>. Lalu klik <strong>"Acak ke 6 Kelompok"</strong>.</div>
+        <div class="center mt-2"><button class="btn btn-primary" id="shuffleBtn">🔀 Acak ke 6 Kelompok</button></div>
+      </div>
+      <div class="card-box">
+        <h3>🎲 Hasil Pembagian Kelompok</h3>
+        <div id="groupResultContainer"><p style="color:#b8b0e0;font-size:.9rem;text-align:center;padding:2rem 0;">Belum ada kelompok. Paste nama & klik "Acak ke 6 Kelompok".</p></div>
+        <div class="center mt-2"><button class="btn btn-primary" id="goToGameBtn" disabled>🚀 Mulai Permainan</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2 -->
+  <div class="panel" id="tab2">
+    <div class="game-top">
+      <div class="round-badge" id="roundLabel">Giliran: Kelompok 1</div>
+      <div class="timer-big" id="timerDisplay">20:00</div>
+    </div>
+    <div class="wheel-layout">
+      <div class="wheel-panel">
+        <div class="wheel-canvas-wrap">
+          <div class="wheel-pointer"></div>
+          <canvas id="wheelCanvas" width="560" height="560"></canvas>
+        </div>
+        <button class="spin-btn" id="spinBtn">🎯 PUTAR RODA</button>
+      </div>
+      <div class="challenge-panel">
+        <div class="empty-state" id="emptyState">
+          <div class="big-icon">🎲</div>
+          <p>Putar roda untuk mendapatkan<br><strong style="color:#f9d423;">tantangan kepedulian</strong>.<br><br>Kelompok yang sedang giliran harus<br>mempraktikkan tantangan di depan kelas!</p>
+        </div>
+        <div class="challenge-card" id="challengeCard">
+          <div class="cat-badge" id="challengeCategory">KATEGORI</div>
+          <h3 id="challengeTitle">—</h3>
+          <div class="challenge-desc" id="challengeDesc">—</div>
+          <div class="challenge-meta">
+            <div class="meta-item">⏱️ Waktu: <strong id="challengeTime">—</strong></div>
+            <div class="meta-item">👥 Anggota: <strong id="challengeMembers">—</strong></div>
+            <div class="meta-item">🏆 Poin: <strong id="challengePoints">—</strong></div>
+          </div>
+          <div class="challenge-actions">
+            <button class="btn-done" id="doneBtn" disabled>✅ Tantangan Selesai!</button>
+            <button class="btn-skip" id="skipBtn" disabled>⏭️ Lewati (-3 poin)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="turn-indicator" id="turnIndicator"><span class="highlight-team" id="activeTeamLabel">Kelompok 1</span> — putar roda & tunjukkan kepedulianmu!</div>
+    <div class="scoreboard" id="scoreboard"></div>
+    <div class="center mt-2"><button class="btn btn-secondary" id="endGameBtn" style="font-size:.85rem;padding:.5rem 1.5rem;">⏹️ Akhiri Permainan</button></div>
+  </div>
+
+  <!-- TAB 3 -->
+  <div class="panel" id="tab3">
+    <div class="winner-banner">
+      <div class="trophy">🏆</div>
+      <h2>PEMENANG</h2>
+      <div class="wname" id="winnerNameDisplay">—</div>
+      <div class="final-scores" id="finalScores"></div>
+    </div>
+    <div class="reflection-grid">
+      <div class="reflection-card">
+        <h3>💬 Refleksi Kepedulian</h3>
+        <ul class="q-list">
+          <li><strong>Tantangan mana yang paling menantang?</strong> Mengapa?</li>
+          <li><strong>Bagaimana perasaanmu saat mempraktikkan tantangan kepedulian?</strong></li>
+          <li><strong>Tantangan mana yang bisa langsung kalian praktikkan di kehidupan nyata?</strong></li>
+        </ul>
+      </div>
+      <div class="reflection-card">
+        <h3>🤝 Refleksi Kerja Sama</h3>
+        <ul class="q-list">
+          <li><strong>Bagaimana kelompokmu membagi peran saat mempraktikkan tantangan?</strong></li>
+          <li><strong>Siapa yang paling berani tampil?</strong> Apakah ada yang perlu didorong?</li>
+          <li><strong>Apa yang membuat kelompokmu kompak atau kurang kompak?</strong></li>
+        </ul>
+      </div>
+      <div class="reflection-card">
+        <h3>🎭 Refleksi Keberanian</h3>
+        <ul class="q-list">
+          <li><strong>Bagaimana rasanya tampil di depan kelas?</strong> Apakah ada rasa gugup?</li>
+          <li><strong>Apa yang membantu kalian mengatasi rasa gugup?</strong></li>
+          <li><strong>Apakah kalian bangga pada diri sendiri setelah menyelesaikan tantangan?</strong></li>
+        </ul>
+      </div>
+      <div class="reflection-card">
+        <h3>🌟 Pesan Moral</h3>
+        <ul class="q-list">
+          <li><strong>Kepedulian</strong> bukan hanya teori — ia harus <strong>dipraktikkan</strong> dalam tindakan nyata.</li>
+          <li><strong>Keberanian</strong> untuk tampil dan peduli adalah langkah awal menjadi pribadi yang berdampak.</li>
+          <li><strong>Kerja sama</strong> membuat tantangan berat menjadi ringan dan menyenangkan.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="center mt-2"><button class="btn btn-primary" id="restartAllBtn">🔄 Main Lagi (Reset)</button></div>
+  </div>
+</div>
+
+<script>
+  const TOTAL_GROUPS = 6;
+  const TOTAL_TIME = 20 * 60;
+  const MIN_NAMES = 6;
+  const TEAM_COLORS = ['#f9d423','#ff4e50','#4ecdc4','#a855f7','#ff9f43','#00d2ff'];
+
+  const CHALLENGES = [
+    { cat:"Peduli Teman", title:"Pijat Bahu Berantai", desc:"Setiap anggota kelompok berdiri berbaris. Anggota paling belakang memijat bahu anggota di depannya, lalu merambat ke depan. Sambil memijat, ucapkan satu kata penyemangat!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Peduli Teman", title:"Pujian Berantai", desc:"Setiap anggota secara bergiliran memuji anggota di sebelah kanannya dengan pujian yang tulus dan spesifik. Tidak boleh mengulang pujian yang sama!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Peduli Teman", title:"Pelukan Virtual", desc:"Buat formasi lingkaran. Setiap anggota merangkul bahu anggota di sampingnya dan berkata 'Aku siap mendukungmu'. Lalu bergantian ke arah sebaliknya.", time:"45 detik", members:"Semua anggota", poin:10 },
+    { cat:"Peduli Teman", title:"Telepon Kaleng", desc:"Bisikkan kalimat kepedulian dari anggota pertama ke anggota terakhir. Anggota terakhir mengucapkan hasilnya. Apakah pesannya sampai dengan benar?", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Peduli Teman", title:"Tepuk Semangat", desc:"Buat yel-yel kelompok berisi pesan peduli dalam 3 menit, lalu tampilkan di depan kelas dengan penuh semangat!", time:"2 menit", members:"Semua anggota", poin:15 },
+    { cat:"Empati", title:"Wajah Cermin", desc:"Berpasangan. Satu anggota mengekspresikan emosi (sedih, senang, kecewa), pasangannya menirukan ekspresi tersebut. Lalu bertukar peran. Akhiri dengan saling bilang 'Aku mengerti perasaanmu'.", time:"1 menit", members:"Berpasangan", poin:10 },
+    { cat:"Empati", title:"Cerita 30 Detik", desc:"Satu anggota bercerita tentang hal yang membuatnya bahagia selama 30 detik. Anggota lain mendengarkan tanpa memotong. Setelah selesai, ucapkan 'Terima kasih sudah berbagi'.", time:"1 menit", members:"Berpasangan", poin:10 },
+    { cat:"Empati", title:"Kursi Empati", desc:"Buat dua baris kursi berhadapan. Siswa duduk berhadapan dan saling menatap mata selama 30 detik tanpa bicara. Rasakan koneksi dan empati.", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Empati", title:"Kartu Perasaan", desc:"Setiap anggota mengambil satu kartu emosi (sedih, marah, takut, senang). Ceritakan singkat kapan terakhir merasakan emosi itu. Anggota lain mendengarkan.", time:"2 menit", members:"Semua anggota", poin:15 },
+    { cat:"Empati", title:"Bisik Peduli", desc:"Setiap anggota membisikkan satu kalimat empati kepada anggota di sebelahnya. Contoh: 'Aku di sini untukmu'. Lalu berbagi bagaimana perasaannya.", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Kerja Sama", title:"Manusia Simpul", desc:"Semua anggota berdiri melingkar, pegang tangan anggota lain secara acak (tidak boleh yang bersebelahan). Kelompok harus melepaskan simpul tanpa melepas tangan!", time:"2 menit", members:"Semua anggota", poin:15 },
+    { cat:"Kerja Sama", title:"Kursi Berantai", desc:"Berdiri melingkar rapat. Semua duduk di pangkuan anggota di belakangnya secara bersamaan. Jika berhasil, tahan 5 detik sambil bertepuk tangan!", time:"1 menit", members:"Semua anggota", poin:15 },
+    { cat:"Kerja Sama", title:"Pindahkan Bola", desc:"Pindahkan bola (atau benda ringan) dari satu ujung barisan ke ujung lain menggunakan tangan tanpa menjatuhkannya. Jika jatuh, ulangi dari awal!", time:"2 menit", members:"Semua anggota", poin:15 },
+    { cat:"Kerja Sama", title:"Hitungan Berantai", desc:"Secara bersamaan, kelompok harus menghitung 1 sampai 10. Tidak boleh ada yang menghitung bersamaan. Jika ada yang bersamaan, ulangi dari 1!", time:"2 menit", members:"Semua anggota", poin:15 },
+    { cat:"Kerja Sama", title:"Gambar Bersama", desc:"Setiap anggota memegang satu spidol warna berbeda. Gambar satu objek bersama di papan tulis tanpa berbicara. Komunikasi hanya lewat gerakan!", time:"2 menit", members:"Semua anggota", poin:15 },
+    { cat:"Keberanian", title:"Pidato 30 Detik", desc:"Satu anggota maju ke depan kelas dan berpidato tentang 'Mengapa Kepedulian Itu Penting' selama 30 detik tanpa henti!", time:"1 menit", members:"1 anggota", poin:10 },
+    { cat:"Keberanian", title:"Nyanyi Bersama", desc:"Kelompok menyanyikan satu lagu anak-anak dengan penuh semangat di depan kelas. Tidak boleh malu-malu!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Keberanian", title:"Tepuk Tangan Berirama", desc:"Buat irama tepuk tangan bersama yang kompak dan kreatif selama 30 detik. Tampilkan di depan kelas!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Keberanian", title:"Jabat Tangan & Pujian", desc:"Satu anggota maju, berjabat tangan dengan guru BK, lalu berikan satu pujian tulus kepada guru. Lalu kembali ke kelompok.", time:"1 menit", members:"1 anggota", poin:10 },
+    { cat:"Keberanian", title:"Deklarasi Kelompok", desc:"Kelompok membuat deklarasi kepedulian singkat (3 kalimat) dan membacakannya bersama-sama dengan lantang di depan kelas!", time:"2 menit", members:"Semua anggota", poin:15 },
+    { cat:"Kepemimpinan", title:"Pemimpin Buta", desc:"Satu anggota ditutup matanya, anggota lain memandu dengan suara untuk mengambil benda di depan kelas. Pemimpin harus memberi instruksi yang jelas!", time:"2 menit", members:"2-3 anggota", poin:15 },
+    { cat:"Kepemimpinan", title:"Instruksi Cepat", desc:"Ketua kelompok memberi instruksi cepat: 'Angkat tangan kiri!', 'Duduk!', 'Tepuk 3x!'. Anggota harus mengikuti dengan tepat. Ketua harus jelas & tegas!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Kepemimpinan", title:"Barisan Teratur", desc:"Ketua kelompok mengatur anggota berbaris berdasarkan tinggi badan tanpa berbicara (hanya gestur). Lalu berdasarkan tanggal lahir!", time:"2 menit", members:"Semua anggota", poin:15 },
+    { cat:"Kepemimpinan", title:"Pembagian Tugas", desc:"Ketua kelompok membagi tugas cepat kepada anggota: siapa yang pegang ini, siapa yang lakukan itu. Lalu semua melakukan tugasnya bersamaan selama 30 detik.", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Kepemimpinan", title:"Tepuk Kepemimpinan", desc:"Ketua kelompok memimpin tepuk tangan berirama yang diikuti seluruh anggota. Ketua harus kreatif dan tegas!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Tanggung Jawab", title:"Janji Kelompok", desc:"Setiap anggota mengucapkan satu janji tanggung jawab (contoh: 'Aku akan membantu teman yang kesulitan'). Lalu semua bertepuk tangan bersama!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Tanggung Jawab", title:"Rapikan Kelas", desc:"Kelompok bertanggung jawab merapikan 5 benda di kelas (kursi, meja, sampah) dalam 1 menit. Semua anggota harus terlibat!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Tanggung Jawab", title:"Tugas Berantai", desc:"Setiap anggota mendapat tugas berantai: anggota 1 ambil buku, anggota 2 taruh di meja, anggota 3 ambil lagi, dst. Semua harus selesai dalam 1 menit!", time:"1 menit", members:"Semua anggota", poin:10 },
+    { cat:"Tanggung Jawab", title:"Jaga Benda", desc:"Satu anggota menjadi penjaga benda (misal spidol) selama 1 menit. Anggota lain mencoba mengambilnya. Penjaga harus bertanggung jawab menjaganya!", time:"1 menit", members:"2-3 anggota", poin:10 },
+    { cat:"Tanggung Jawab", title:"Ucapkan Terima Kasih", desc:"Setiap anggota mengucapkan terima kasih kepada satu orang di kelas (guru/teman) dengan alasan spesifik. Lakukan dengan tulus dan tatap mata!", time:"1 menit", members:"Semua anggota", poin:10 },
+  ];
+
+  let groups = [];
+  let currentTurn = 0;
+  let scores = [];
+  let currentChallenge = null;
+  let usedChallenges = [];
+  let timeLeft = TOTAL_TIME;
+  let timerInterval = null;
+  let gameActive = false;
+  let isSpinning = false;
+  let wheelAngle = 0;
+  let spinVelocity = 0;
+  let spinAnimationId = null;
+
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+  const namesInput = document.getElementById('namesInput');
+  const nameCount = document.getElementById('nameCount');
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  const groupResultContainer = document.getElementById('groupResultContainer');
+  const goToGameBtn = document.getElementById('goToGameBtn');
+  const roundLabel = document.getElementById('roundLabel');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const wheelCanvas = document.getElementById('wheelCanvas');
+  const ctx = wheelCanvas.getContext('2d');
+  const spinBtn = document.getElementById('spinBtn');
+  const emptyState = document.getElementById('emptyState');
+  const challengeCard = document.getElementById('challengeCard');
+  const challengeCategory = document.getElementById('challengeCategory');
+  const challengeTitle = document.getElementById('challengeTitle');
+  const challengeDesc = document.getElementById('challengeDesc');
+  const challengeTime = document.getElementById('challengeTime');
+  const challengeMembers = document.getElementById('challengeMembers');
+  const challengePoints = document.getElementById('challengePoints');
+  const doneBtn = document.getElementById('doneBtn');
+  const skipBtn = document.getElementById('skipBtn');
+  const scoreboard = document.getElementById('scoreboard');
+  const activeTeamLabel = document.getElementById('activeTeamLabel');
+  const turnIndicator = document.getElementById('turnIndicator');
+  const endGameBtn = document.getElementById('endGameBtn');
+  const winnerNameDisplay = document.getElementById('winnerNameDisplay');
+  const finalScores = document.getElementById('finalScores');
+  const restartAllBtn = document.getElementById('restartAllBtn');
+
+  tabBtns.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const target=btn.dataset.tab;
+      tabBtns.forEach(b=>b.classList.remove('active'));
+      panels.forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(target).classList.add('active');
+    });
+  });
+
+  function switchTab(tabId){
+    tabBtns.forEach(b=>b.classList.remove('active'));
+    panels.forEach(p=>p.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  function parseNames(text){
+    return text.split(/[\n,]+/).map(n=>n.trim()).filter(n=>n.length>0);
+  }
+
+  function updateNameCount(){
+    const names=parseNames(namesInput.value);
+    nameCount.textContent=`${names.length} nama terdeteksi`;
+    nameCount.style.color=(names.length>0&&names.length<MIN_NAMES)?'#ff6b6b':'#b8b0e0';
+  }
+  namesInput.addEventListener('input',updateNameCount);
+
+  function shuffleGroups(){
+    const validNames=parseNames(namesInput.value);
+    if(validNames.length<MIN_NAMES){
+      alert(`Minimal ${MIN_NAMES} nama siswa untuk memulai. Saat ini: ${validNames.length} nama.`);
+      return;
+    }
+    const shuffled=[...validNames];
+    for(let i=shuffled.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+    }
+    groups=[];
+    for(let i=0;i<TOTAL_GROUPS;i++){
+      groups.push({name:`Kelompok ${i+1}`,color:TEAM_COLORS[i],members:[]});
+    }
+    shuffled.forEach((name,idx)=>groups[idx%TOTAL_GROUPS].members.push(name));
+    renderGroupResults();
+    goToGameBtn.disabled=false;
+  }
+
+  function renderGroupResults(){
+    groupResultContainer.innerHTML='';
+    const grid=document.createElement('div');
+    grid.className='group-result-grid';
+    groups.forEach(g=>{
+      const div=document.createElement('div');
+      div.className='group-result';
+      div.style.borderLeftColor=g.color;
+      const memberList=g.members.length>0?g.members.map(m=>`<div>• ${m}</div>`).join(''):'<div style="opacity:.5;">(kosong)</div>';
+      div.innerHTML=`<div class="gname"><span class="dot" style="background:${g.color}"></span>${g.name} (${g.members.length} org)</div><div class="members">${memberList}</div>`;
+      grid.appendChild(div);
+    });
+    groupResultContainer.appendChild(grid);
+  }
+  shuffleBtn.addEventListener('click',shuffleGroups);
+
+  const WHEEL_COLORS=['#f9d423','#ff4e50','#4ecdc4','#a855f7','#ff9f43','#00d2ff'];
+  const WHEEL_LABELS=['Peduli','Empati','Kerja Sama','Keberanian','Kepemimpinan','Tanggung Jawab'];
+
+  function drawWheel(angleDeg){
+    const w=wheelCanvas.width,h=wheelCanvas.height;
+    const cx=w/2,cy=h/2;
+    const radius=Math.min(w,h)/2-10;
+    const numSegments=WHEEL_LABELS.length;
+    const segAngle=(Math.PI*2)/numSegments;
+    const startAngle=(angleDeg*Math.PI)/180;
+    ctx.clearRect(0,0,w,h);
+    for(let i=0;i<numSegments;i++){
+      const segStart=startAngle+i*segAngle;
+      const segEnd=segStart+segAngle;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,radius,segStart,segEnd);
+      ctx.closePath();
+      ctx.fillStyle=WHEEL_COLORS[i%WHEEL_COLORS.length];
+      ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,.2)';
+      ctx.lineWidth=2;
+      ctx.stroke();
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(segStart+segAngle/2);
+      ctx.textAlign='right';
+      ctx.fillStyle='#1a1a2e';
+      ctx.font='bold 22px Segoe UI,sans-serif';
+      ctx.fillText(WHEEL_LABELS[i],radius-20,8);
+      ctx.restore();
+    }
+    ctx.beginPath();
+    ctx.arc(cx,cy,38,0,Math.PI*2);
+    ctx.fillStyle='#1a1a2e';
+    ctx.fill();
+    ctx.strokeStyle='#f9d423';
+    ctx.lineWidth=4;
+    ctx.stroke();
+    ctx.fillStyle='#f9d423';
+    ctx.font='bold 18px Segoe UI,sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('🎡',cx,cy);
+  }
+
+  function spinWheel(){
+    if(isSpinning||!gameActive)return;
+    isSpinning=true;
+    spinBtn.disabled=true;
+    doneBtn.disabled=true;
+    skipBtn.disabled=true;
+    challengeCard.classList.remove('show');
+    emptyState.style.display='block';
+    spinVelocity=20+Math.random()*15;
+    const friction=0.985;
+    function animate(){
+      wheelAngle+=spinVelocity;
+      spinVelocity*=friction;
+      drawWheel(wheelAngle);
+      if(spinVelocity>0.3){
+        spinAnimationId=requestAnimationFrame(animate);
+      }else{
+        cancelAnimationFrame(spinAnimationId);
+        isSpinning=false;
+        spinBtn.disabled=false;
+        const normalized=((wheelAngle%360)+360)%360;
+        const pointerAngle=((270-normalized)%360+360)%360;
+        const segAngleDeg=360/WHEEL_LABELS.length;
+        const segIndex=Math.floor(pointerAngle/segAngleDeg)%WHEEL_LABELS.length;
+        showChallengeByCategory(WHEEL_LABELS[segIndex]);
+      }
+    }
+    animate();
+  }
+  spinBtn.addEventListener('click',spinWheel);
+
+  function showChallengeByCategory(category){
+    let available=CHALLENGES.map((c,idx)=>({...c,_idx:idx})).filter(c=>c.cat===category&&!usedChallenges.includes(c._idx));
+    if(available.length===0){
+      available=CHALLENGES.map((c,idx)=>({...c,_idx:idx})).filter(c=>!usedChallenges.includes(c._idx));
+    }
+    if(available.length===0){
+      usedChallenges=[];
+      available=CHALLENGES.map((c,idx)=>({...c,_idx:idx}));
+    }
+    const randomIdx=Math.floor(Math.random()*available.length);
+    const challenge=available[randomIdx];
+    usedChallenges.push(challenge._idx);
+    currentChallenge=challenge;
+    emptyState.style.display='none';
+    challengeCard.classList.add('show');
+    challengeCategory.textContent=challenge.cat;
+    challengeTitle.textContent=challenge.title;
+    challengeDesc.textContent=challenge.desc;
+    challengeTime.textContent=challenge.time;
+    challengeMembers.textContent=challenge.members;
+    challengePoints.textContent=`+${challenge.poin}`;
+    doneBtn.disabled=false;
+    skipBtn.disabled=false;
+  }
+
+  doneBtn.addEventListener('click',()=>{
+    if(!gameActive||!currentChallenge)return;
+    const poin=currentChallenge.poin;
+    scores[currentTurn]+=poin;
+    renderScoreboard();
+    showToast(`🎉 Hebat! +${poin} poin untuk ${groups[currentTurn].name}`);
+    doneBtn.disabled=true;
+    skipBtn.disabled=true;
+    setTimeout(nextTurn,2000);
+  });
+
+  skipBtn.addEventListener('click',()=>{
+    if(!gameActive||!currentChallenge)return;
+    scores[currentTurn]-=3;
+    renderScoreboard();
+    showToast(`⏭️ Dilewati. -3 poin untuk ${groups[currentTurn].name}`);
+    doneBtn.disabled=true;
+    skipBtn.disabled=true;
+    setTimeout(nextTurn,1500);
+  });
+
+  function nextTurn(){
+    currentTurn=(currentTurn+1)%groups.length;
+    updateTurnDisplay();
+    renderScoreboard();
+    challengeCard.classList.remove('show');
+    emptyState.style.display='block';
+    currentChallenge=null;
+    spinBtn.disabled=false;
+    doneBtn.disabled=true;
+    skipBtn.disabled=true;
+  }
+
+  function startGame(){
+    if(groups.length!==TOTAL_GROUPS||groups.some(g=>g.members.length===0)){
+      alert('Pastikan semua kelompok memiliki anggota. Acak terlebih dahulu.');
+      return;
+    }
+    currentTurn=0;
+    scores=new Array(groups.length).fill(0);
+    timeLeft=TOTAL_TIME;
+    gameActive=true;
+    usedChallenges=[];
+    currentChallenge=null;
+    wheelAngle=0;
+    isSpinning=false;
+    drawWheel(0);
+    renderScoreboard();
+    updateTurnDisplay();
+    challengeCard.classList.remove('show');
+    emptyState.style.display='block';
+    spinBtn.disabled=false;
+    doneBtn.disabled=true;
+    skipBtn.disabled=true;
+    switchTab('tab2');
+    startTimer();
+  }
+  goToGameBtn.addEventListener('click',startGame);
+
+  function renderScoreboard(){
+    scoreboard.innerHTML='';
+    groups.forEach((g,idx)=>{
+      const card=document.createElement('div');
+      card.className='score-card'+(idx===currentTurn?' active-turn':'');
+      card.innerHTML=`<div class="team-name"><span class="dot" style="background:${g.color}"></span>${g.name}</div><div class="team-score">${scores[idx]} <small>poin</small></div>`;
+      scoreboard.appendChild(card);
+    });
+  }
+
+  function updateTurnDisplay(){
+    const g=groups[currentTurn];
+    activeTeamLabel.textContent=g.name;
+    roundLabel.textContent=`Giliran: ${g.name}`;
+    turnIndicator.innerHTML=`<span class="highlight-team">${g.name}</span> — putar roda & tunjukkan kepedulianmu!`;
+  }
+
+  function showToast(msg){
+    const toast=document.createElement('div');
+    toast.className='toast';
+    toast.textContent=msg;
+    document.body.appendChild(toast);
+    setTimeout(()=>{
+      toast.style.opacity='0';
+      toast.style.transition='opacity .3s';
+      setTimeout(()=>toast.remove(),300);
+    },1600);
+  }
+
+  function startTimer(){
+    if(timerInterval)clearInterval(timerInterval);
+    timerInterval=setInterval(()=>{
+      timeLeft--;
+      updateTimerDisplay();
+      if(timeLeft<=0){
+        clearInterval(timerInterval);
+        endGame('Waktu habis!');
+      }
+    },1000);
+  }
+
+  function updateTimerDisplay(){
+    const m=Math.floor(timeLeft/60);
+    const s=timeLeft%60;
+    timerDisplay.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(timeLeft<=30)timerDisplay.style.color='#ff4e50';
+    else if(timeLeft<=60)timerDisplay.style.color='#ffa500';
+    else timerDisplay.style.color='#f9d423';
+  }
+
+  function endGame(reason){
+    gameActive=false;
+    if(timerInterval)clearInterval(timerInterval);
+    let maxScore=-1;
+    let winnerIndices=[];
+    scores.forEach((s,i)=>{
+      if(s>maxScore){maxScore=s;winnerIndices=[i];}
+      else if(s===maxScore)winnerIndices.push(i);
+    });
+    winnerNameDisplay.textContent=winnerIndices.map(i=>groups[i].name).join(' & ');
+    finalScores.innerHTML='';
+    groups.forEach((g,i)=>{
+      const div=document.createElement('div');
+      div.className='final-score-item'+(winnerIndices.includes(i)?' winner':'');
+      div.innerHTML=`<div class="fs-name">${g.name}</div><div class="fs-val">${scores[i]}</div>`;
+      finalScores.appendChild(div);
+    });
+    switchTab('tab3');
+  }
+  endGameBtn.addEventListener('click',()=>{if(gameActive)endGame('Diakhiri oleh fasilitator');});
+
+  restartAllBtn.addEventListener('click',()=>{
+    if(timerInterval)clearInterval(timerInterval);
+    gameActive=false;
+    switchTab('tab1');
+    namesInput.value='';
+    updateNameCount();
+    groups=[];
+    groupResultContainer.innerHTML='<p style="color:#b8b0e0;font-size:.9rem;text-align:center;padding:2rem 0;">Belum ada kelompok. Paste nama & klik "Acak ke 6 Kelompok".</p>';
+    goToGameBtn.disabled=true;
+  });
+
+  updateNameCount();
+  drawWheel(0);
+</script>
+</body>
+</html>
